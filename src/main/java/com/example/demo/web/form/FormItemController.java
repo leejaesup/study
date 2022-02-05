@@ -1,9 +1,6 @@
 package com.example.demo.web.form;
 
-import com.example.demo.domain.item.DeliveryCode;
-import com.example.demo.domain.item.Item;
-import com.example.demo.domain.item.ItemRepository;
-import com.example.demo.domain.item.ItemType;
+import com.example.demo.domain.item.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -28,12 +25,6 @@ import java.util.*;
 public class FormItemController {
 
     private final ItemRepository itemRepository;
-    private final ItemValidator itemValidator;
-
-    @InitBinder
-    public void init(WebDataBinder dataBinder) {
-        dataBinder.addValidators(itemValidator);
-    }
 
     @ModelAttribute("regions")
     public Map<String, String> regions() {
@@ -80,8 +71,15 @@ public class FormItemController {
     }
 
     @PostMapping("/add")
-    public String addItem(@Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+    public String addItem(@Validated(SaveCheck.class) @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
 //    public String addItem(Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        //특정 필드가 아닌 복합 룰 검증
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                bindingResult.addError(new ObjectError("item", new String[]{"totalPriceMin"}, new Object[]{10000, resultPrice}, null));
+            }
+        }
 
         //검증에 실패하면 다시 입력 폼으로
         if (bindingResult.hasErrors()) {
@@ -108,7 +106,21 @@ public class FormItemController {
     }
 
     @PostMapping("/{itemId}/edit")
-    public String edit(@PathVariable Long itemId, @ModelAttribute Item item) {
+    public String edit(@PathVariable Long itemId, @Validated(UpdateCheck .class) @ModelAttribute Item item, BindingResult bindingResult) {
+
+        //특정 필드가 아닌 복합 룰 검증
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                bindingResult.addError(new ObjectError("item", new String[]{"totalPriceMin"}, new Object[]{10000, resultPrice}, null));
+            }
+        }
+
+        if (bindingResult.hasErrors()) {
+            log.info("errors={}", bindingResult);
+            return "form/editForm";
+        }
+
         itemRepository.update(itemId, item);
         return "redirect:/form/items/{itemId}";
     }

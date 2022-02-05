@@ -1,19 +1,17 @@
-package com.example.demo.web.form;
+package com.example.demo.web.item.form;
 
 import com.example.demo.domain.item.ItemType;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter @Setter
-public class ItemUpdateForm {
-
-    @NotNull
-    private Long id;
+public class ItemSaveForm {
 
     @NotBlank
     private String itemName;
@@ -23,6 +21,7 @@ public class ItemUpdateForm {
     private Integer price;
 
     @NotNull
+    @Max(value = 9999)
     private Integer quantity;
 
     private Boolean open; //판매 여부

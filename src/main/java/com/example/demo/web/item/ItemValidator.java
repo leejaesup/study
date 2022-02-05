@@ -1,4 +1,4 @@
-package com.example.demo.web.form;
+package com.example.demo.web.item;
 
 import com.example.demo.domain.item.Item;
 import org.springframework.stereotype.Component;
